@@ -3,16 +3,15 @@
 var camera, scene, renderer;
 var cameraControls;
 
+
 var clock = new THREE.Clock();
 var timer = 0;
+var keyBoard = new KeyboardState();
 
-function render() {
-	var delta = clock.getDelta();
+function moveroboto(){
 	timer += 0.1;
 	let range = 0.1;
 
-	root.rotateZ(-Math.cos(timer)*0.005);
-	root.rotateY(-Math.cos(timer)*0.01);
 	rShld.rotateX(-Math.cos(timer)*range);
 	rElbow.rotateX(-Math.sin(timer)*range*0.5);
 
@@ -24,14 +23,16 @@ function render() {
 
 	rHip.rotateX(Math.cos(timer)*range);
 	rKnee.rotateX(Math.sin(timer)*range*0.5);
-	camera.position.set( Math.cos(timer/50)*1200, 400, Math.sin(timer/50)*1200);
+}
+function render() {
+	var delta = clock.getDelta();
 	cameraControls.update(delta);
 	renderer.render(scene, camera);
 }
 
 function fillScene() {
 	scene = new THREE.Scene();
-	scene.fog = new THREE.Fog( 0x808080, 2000, 4000 );
+	//scene.fog = new THREE.Fog( 0x808080, 2000, 4000 );
 
 	// LIGHTS
 	scene.add( new THREE.AmbientLight( 0x222222 ) );
@@ -202,8 +203,8 @@ function drawRobot() {
 }
 
 function init() {
-	var canvasWidth = 600;
-	var canvasHeight = 400;
+	var canvasWidth = 1200;
+	var canvasHeight = 900;
 	var canvasRatio = canvasWidth / canvasHeight;
 
 	// RENDERER
@@ -215,10 +216,10 @@ function init() {
 	renderer.setClearColor( 0xAAAAAA, 1.0 );
 
 	// CAMERA
-	camera = new THREE.PerspectiveCamera( 45, canvasRatio, 1, 4000 );
+	camera = new THREE.PerspectiveCamera( 30, canvasRatio, 1, 40000 );
 	// CONTROLS
 	cameraControls = new THREE.OrbitControls(camera, renderer.domElement);
-	camera.position.set( -200, 400, 1200);
+	camera.position.set( -500, 900, 3000);
 	cameraControls.target.set(0,100,0);
 }
 var root, groupChest, neck, head, hips, lHip, rHip, rKnee, lKnee, lAnkle, rAnkle, rShld, lShld, lElbow, rElbow, lWrist, rWrist;
@@ -229,6 +230,36 @@ function addToDOM() {
 }
 
 function animate() {
+
+	keyBoard.update();
+
+	 // Movement Constants
+	 var moveSpeed = 15;
+	 var eyeSpeed = 0.1;
+
+	 var rotateSpeed = 2.5;
+	 rotateSpeed *= Math.PI / 180;
+	 // Forward vector
+	 // Moving Forward
+	 if (keyBoard.pressed("W")) {
+			 root.translateZ(moveSpeed);
+	 }
+	 // Moving Back
+	 if (keyBoard.pressed("S")) {
+			 root.translateZ(-moveSpeed);
+	 }
+	 // Rotate Left
+	 if (keyBoard.pressed("A")) {
+			 root.rotateY(rotateSpeed);
+	 }
+	 // Rotate Right
+	 if (keyBoard.pressed("D")) {
+			 root.rotateY(-rotateSpeed);
+	 }
+	 // Move Legs
+	 if (keyBoard.pressed("W") || keyBoard.pressed("A") || keyBoard.pressed("S") || keyBoard.pressed("D")) {
+			 moveroboto();
+	}
 	window.requestAnimationFrame(animate);
 	render();
 }
