@@ -3,38 +3,18 @@
 var camera, scene, renderer;
 var cameraControls;
 
-
 var clock = new THREE.Clock();
-var timer = 0;
 var keyBoard = new KeyboardState();
+var mult = 0;
+var root;//, body, neck, headGroup, hip, HipLeft, HipRight, KneeRight, KneeLeft, footLeft,footRight, shldRight, shldLeft, elbowLeft, elbowRight, handLeft, handRight;
 
-function moveroboto(){
-	timer += 0.1;
-	let range = 0.1;
-
-	rShld.rotateX(-Math.cos(timer)*range);
-	rElbow.rotateX(-Math.sin(timer)*range*0.5);
-
-	lShld.rotateX(Math.cos(timer)*range);
-	lElbow.rotateX(-Math.sin(timer)*range*0.5);
-
-	lHip.rotateX(-Math.cos(timer)*range);
-	lKnee.rotateX(Math.sin(timer)*range*0.5);
-
-	rHip.rotateX(Math.cos(timer)*range);
-	rKnee.rotateX(Math.sin(timer)*range*0.5);
-}
-function render() {
-	var delta = clock.getDelta();
-	cameraControls.update(delta);
-	renderer.render(scene, camera);
-}
-
+//-----------------------------------------------------------------------------
 function fillScene() {
 	scene = new THREE.Scene();
 	//scene.fog = new THREE.Fog( 0x808080, 2000, 4000 );
 
 	// LIGHTS
+
 	scene.add( new THREE.AmbientLight( 0x222222 ) );
 
 	var light = new THREE.DirectionalLight( 0xffffff, 0.7 );
@@ -58,153 +38,217 @@ function fillScene() {
 
  drawRobot();
 }
-
+//-----------------------------------------------------------------------------
 function drawRobot() {
-
-	//////////////////////////////
+	//STEPS DOCUMENTATION - https://miscursos.tec.mx/bbcswebdav/pid-13274413-dt-content-rid-74358968_1/courses/QRO.TC3022.1.1911.1585/labs/lab6.html
 	root = new THREE.Group();
 	root.position.y = -175;
 	scene.add(root);
-	// MATERIALS
 
 	let materialYellow = new THREE.MeshPhongMaterial({color: 0xffcc00});
 	let materialGray = new THREE.MeshPhongMaterial({color: 0x333333});
+	//////////////////////////////
+	// MATERIALS
 
-	let joint = new THREE.Mesh(new THREE.SphereBufferGeometry(25,32,32), materialGray);
-	let bone = new THREE.Mesh(new THREE.CylinderBufferGeometry(20,20,100,32), materialYellow);
-	bone.position.y = -50;
-	let piece = new THREE.Group();
-	piece.add(joint);
-	piece.add(bone);
+//----------------------------------------------------------------------------
+	let tjoint = new THREE.Mesh(new THREE.SphereBufferGeometry(20,32,32), materialGray);
+	let tbone = new THREE.Mesh(new THREE.CylinderBufferGeometry(20,10,100,32), materialYellow);
+	let tpiece = new THREE.Group();
+	tbone.position.y = -50;
+	tpiece.add(tjoint);
+	tpiece.add(tbone);
+	//----------------------------------------------------------------------------
 
-	let hand = new THREE.Mesh(new THREE.BoxBufferGeometry(10, 40, 40), materialYellow);
+	//-------------------------Feet Piece---------------------------------------------
+	//Foot
+	let foot = new THREE.Mesh(new THREE.BoxBufferGeometry(40, 40, 75), materialYellow);
+	foot.position.z = 20;
+	foot.position.y = -30;
+	//Group Feet to joint
+	let feetGroup = new THREE.Group();
+	// Ankle
+	feetGroup.add(tjoint.clone());
+	feetGroup.add(foot);
+	//-----------------------------------------------------------------------------
+
+	//-------------------------Hand Piece------------------------------------------
+	let hand = new THREE.Mesh(new THREE.BoxBufferGeometry(10, 40, 50), materialYellow);
 	hand.position.y = -25;
+
+	//Group Hand to joint
 	let wristPiece = new THREE.Group();
-	wristPiece.add(joint.clone());
+	//Wrist
+	wristPiece.add(tjoint.clone());
 	wristPiece.add(hand);
+	//-----------------------------------------------------------------------------
+		// var bodyMaterial = new THREE.MeshLambertMaterial();
+		// bodyMaterial.color.setRGB( 0.5, 0.5, 0.5 );
+		// var cylinder;
+		// cylinder = new THREE.Mesh(
+		// 	new THREE.CylinderGeometry( 60, 60, 150, 32 ), bodyMaterial );
+		// cylinder.position.x = 0;
+		// cylinder.position.y = 320;
+		// cylinder.position.z = 0;
+		// scene.add( cylinder );
+	//----------------------------------------------------------------------------
+		// MODELS
 
-	let feet = new THREE.Mesh(new THREE.BoxBufferGeometry(30, 20, 75), materialYellow);
-	feet.position.y = -30;
-	feet.position.z = 20;
-	let feetPiece = new THREE.Group();
-	feetPiece.add(joint.clone());
-	feetPiece.add(feet);
+	//body
+	var	body = new THREE.Group();
+	root.add(body);
+	//-----------------------------Main Body------------------------------
+	let mainBody = new THREE.Mesh(new THREE.BoxBufferGeometry(150, 150, 105), materialYellow);
+	mainBody.position.x = 0;
+	mainBody.position.y = 470;
+	mainBody.position.z = 0;
+	body.add(mainBody);
+	//----------------------------Head----------------------------------
 
-	// MODELS
+	//Neck
+	var neckGroup = new THREE.Group();
+	let neck =new THREE.Mesh(new THREE.SphereBufferGeometry(20,32,32), materialGray);
+	neckGroup.add(neck);
+	neckGroup.position.y = 90;
+	//Add neck to mainbody
+	mainBody.add(neckGroup);
+	
+	var headGroup = new THREE.Group();
+	let skull = new THREE.Mesh(new THREE.BoxBufferGeometry(100, 100, 75), materialYellow);
+	headGroup.add(skull);
 
- 	//body
-	groupChest = new THREE.Group();
-	root.add(groupChest);
-
-	let chest = new THREE.Mesh(new THREE.BoxBufferGeometry(150, 150, 75), materialYellow);
-	chest.position.x = 0;
-	chest.position.y = 470;
-	chest.position.z = 0;
-	groupChest.add(chest);
-
-	neck = new THREE.Group();
-	chest.add(neck);
-	let neckSphere = new THREE.Mesh(new THREE.SphereBufferGeometry(20,32,32), materialGray);
-	neck.add(neckSphere);
-	neck.position.y = 90;
-
-	head = new THREE.Group();
-	let smallSphere = new THREE.Mesh(new THREE.SphereBufferGeometry(10,32,32), materialGray);
-	let face = new THREE.Mesh(new THREE.BoxBufferGeometry(100, 75, 75), materialYellow);
-	head.add(face);
-
-	let lEye = smallSphere.clone();
-	lEye.position.x = 25;
-	lEye.position.y = 15;
-	lEye.position.z = 35;
-	head.add(lEye);
-
-	let rEye = smallSphere.clone();
-	rEye.position.x = -25;
-	rEye.position.y = 15;
-	rEye.position.z = 35;
-	head.add(rEye);
-
-	let lEar = smallSphere.clone();
-	lEar.position.x = 50;
-	head.add(lEar);
-
-	let rEar = smallSphere.clone();
-	rEar.position.x = -50;
-	head.add(rEar);
-
+	//Mouth box
 	let mouth = new THREE.Mesh(new THREE.BoxBufferGeometry(50, 10, 5), materialGray);
 	mouth.position.y = -15;
 	mouth.position.z = 40;
-	head.add(mouth);
+	headGroup.add(mouth);
 
-	head.position.y = 40;
-	neck.add(head);
+	// Multi purpose sphere
+	let features = new THREE.Mesh(new THREE.SphereBufferGeometry(15,0,0), materialGray);
+	//Clone feature sphere for Ears 
+	let rightEar = features.clone();
+	let leftEar = features.clone();
+	//Position Ears (take in count x of skull)
+	rightEar.position.x = -50;
+	leftEar.position.x = 50;
+	headGroup.add(rightEar);
+	headGroup.add(leftEar);
 
-	rShld = piece.clone();
-	rElbow = piece.clone();
-	rElbow.position.y = -90;
-	rShld.add(rElbow);
-	rWrist = wristPiece.clone();
-	rWrist.position.y = -90;
-	rElbow.add(rWrist);
-	rShld.position.x = -75;
-	rShld.position.y = 60;
-	rShld.position.z = 0;
-	chest.add(rShld);
-	rShld.rotateZ(-0.3);
+	//Clone feature sphere for Eyes
+	let rightEye = features.clone();
+	let leftEye = features.clone();
+	// Position
+	rightEye.position.x = -25;
+	rightEye.position.y = 15;
+	rightEye.position.z = 35;
 
-
-	lShld = piece.clone();
-	lElbow = piece.clone();
-	lElbow.position.y = -90;
-	lShld.add(lElbow);
-	lWrist = wristPiece.clone();
-	lWrist.position.y = -90;
-	lElbow.add(lWrist);
-	lShld.position.x = 75;
-	lShld.position.y = 60;
-	lShld.position.z = 0;
-	chest.add(lShld);
-	lShld.rotateZ(0.3);
-
-	hips = new THREE.Group();
+	leftEye.position.x = 25;
+	leftEye.position.y = 15;
+	leftEye.position.z = 35;
+	
+	headGroup.add(leftEye);
+	headGroup.add(rightEye);
+	//ADD HEAD TO NECK IN BODY
+	headGroup.position.y = 50;
+	neckGroup.add(headGroup);
+//------------------------------------------------------------------------------
+//----------------------------Legs&Hip------------------------------------------
+	var hip = new THREE.Group();
+	let hipbox = new THREE.Mesh(new THREE.BoxBufferGeometry(150, 10, 75), materialYellow);
 	let sphere = new THREE.Mesh(new THREE.SphereBufferGeometry(35,32,32), materialGray);
-	let box = new THREE.Mesh(new THREE.BoxBufferGeometry(150, 30, 75), materialYellow);
-	box.position.y = -35;
-	hips.add(sphere);
-	hips.add(box);
-	hips.position.y = 385;
-	root.add(hips);
+	hipbox.position.y = -25;
+	hip.add(sphere);
+	hip.add(hipbox);
+	hip.position.y = 385;
+	root.add(hip);
+
+// Clone Hips 
+	HipRight = tpiece.clone();
+	HipRight.position.x = -55;
+	HipRight.position.y = -40;
+
+	HipLeft = tpiece.clone();
+	HipLeft.position.x = 55;
+	HipLeft.position.y = -40;
+	
+	// Clone Knees
+	KneeRight = tpiece.clone();
+	KneeRight.position.y = -90;
+
+	KneeLeft = tpiece.clone();
+	KneeLeft.position.y = -90;
+
+// Clone Feet
+	footRight = feetGroup.clone();
+	footRight.position.y = -90;
+	footLeft = feetGroup.clone();
+	footLeft.position.y = -90;
+	
+//Join HipJoint - Knee
+	HipRight.add(KneeRight);
+	HipLeft.add(KneeLeft);
+//Join Knee - Foot
+	KneeRight.add(footRight);
+	KneeLeft.add(footLeft);
+//Join Hip - HipJoint
+	hip.add(HipRight);
+	hip.add(HipLeft);
+	//-----------------------------Arms+Hands------------------------------------
+//Sholders
+	shldRight = tpiece.clone();
+	shldRight.position.x = -85;
+	shldRight.position.y = 60;
+	shldRight.position.z = 0;
+	shldRight.rotateZ(-0.3);
+
+	shldLeft = tpiece.clone();
+	shldLeft.position.x = 85;
+	shldLeft.position.y = 60;
+	shldLeft.position.z = 0;
+	shldLeft.rotateZ(0.3);
+
+//Elbows
+	elbowLeft = tpiece.clone();
+	elbowLeft.position.y = -100;
+	
+	elbowRight = tpiece.clone();
+	elbowRight.position.y = -100;
+//Hands
+	handRight = wristPiece.clone();
+	handRight.position.y = -100;
+	handLeft = wristPiece.clone();
+	handLeft.position.y = -100;
+	
+	// Join and add to main body
+	shldRight.add(elbowRight);
+	shldLeft.add(elbowLeft);
+	elbowRight.add(handRight);
+	elbowLeft.add(handLeft);
+	mainBody.add(shldLeft);
+	mainBody.add(shldRight);
+
+}
 
 
-	rHip = piece.clone();
-	rKnee = piece.clone();
-	rKnee.position.y = -90;
-	rHip.add(rKnee);
-	rAnkle = feetPiece.clone();
-	rAnkle.position.y = -90;
-	rKnee.add(rAnkle);
-	rHip.position.x = -55;
-	rHip.position.y = -40;
-	hips.add(rHip);
+function moveRobot(){
+	mult += 0.2;
+	let range = 0.2;
+// Rotation of arms
+	shldRight.rotateX(-Math.cos(mult)*range);
+	shldLeft.rotateX(Math.cos(mult)*range);
+	elbowRight.rotateX(-Math.sin(mult)*range*0.5);
+	elbowLeft.rotateX(Math.sin(mult)*range*0.5);
+// Rotation of legs
+	HipLeft.rotateX(-Math.cos(mult)*range);
+	HipRight.rotateX(Math.cos(mult)*range);
+	KneeLeft.rotateX(Math.sin(mult)*range*0.5);
+	KneeRight.rotateX(Math.sin(mult)*range*0.5);
 
-	lHip = piece.clone();
-	lKnee = piece.clone();
-	lKnee.position.y = -90;
-	lHip.add(lKnee);
-	lAnkle = feetPiece.clone();
-	lAnkle.position.y = -90;
-	lKnee.add(lAnkle);
-	lHip.position.x = 55;
-	lHip.position.y = -40;
-	hips.add(lHip);
 
 }
 
 function init() {
-	var canvasWidth = 1200;
-	var canvasHeight = 900;
+	var canvasWidth = 1400;
+	var canvasHeight = 1000;
 	var canvasRatio = canvasWidth / canvasHeight;
 
 	// RENDERER
@@ -216,55 +260,58 @@ function init() {
 	renderer.setClearColor( 0xAAAAAA, 1.0 );
 
 	// CAMERA
-	camera = new THREE.PerspectiveCamera( 30, canvasRatio, 1, 40000 );
+	camera = new THREE.PerspectiveCamera( 45, canvasRatio, 1, 4000 );
 	// CONTROLS
 	cameraControls = new THREE.OrbitControls(camera, renderer.domElement);
-	camera.position.set( -500, 900, 3000);
+	camera.position.set( -800, 900, 3000);
 	cameraControls.target.set(0,100,0);
 }
-var root, groupChest, neck, head, hips, lHip, rHip, rKnee, lKnee, lAnkle, rAnkle, rShld, lShld, lElbow, rElbow, lWrist, rWrist;
 
 function addToDOM() {
     var canvas = document.getElementById('canvas');
     canvas.appendChild(renderer.domElement);
 }
 
-function animate() {
 
+function animate() {
+	//Catch keyboard strokes
 	keyBoard.update();
 
-	 // Movement Constants
-	 var moveSpeed = 15;
-	 var eyeSpeed = 0.1;
-
-	 var rotateSpeed = 2.5;
-	 rotateSpeed *= Math.PI / 180;
-	 // Forward vector
-	 // Moving Forward
-	 if (keyBoard.pressed("W")) {
-			 root.translateZ(moveSpeed);
-	 }
-	 // Moving Back
-	 if (keyBoard.pressed("S")) {
-			 root.translateZ(-moveSpeed);
-	 }
-	 // Rotate Left
-	 if (keyBoard.pressed("A")) {
-			 root.rotateY(rotateSpeed);
-	 }
-	 // Rotate Right
-	 if (keyBoard.pressed("D")) {
-			 root.rotateY(-rotateSpeed);
-	 }
-	 // Move Legs
-	 if (keyBoard.pressed("W") || keyBoard.pressed("A") || keyBoard.pressed("S") || keyBoard.pressed("D")) {
-			 moveroboto();
+	var moveSpeed = 15;
+	var rotateSpeed = 2.5;
+	rotateSpeed *= Math.PI / 180;
+//Movements
+	if (keyBoard.pressed("W")) {
+		//Foward translate movement
+			root.translateZ(moveSpeed);
 	}
+	if (keyBoard.pressed("S")) {
+		//Backward translate movement
+			root.translateZ(-moveSpeed);
+	}
+	//-----------------Change direction--------------------------------
+	if (keyBoard.pressed("A")) {
+		
+			root.rotateY(rotateSpeed);
+	}
+	if (keyBoard.pressed("D")) {
+			root.rotateY(-rotateSpeed);
+	}
+	//-----------------------------------------------------------------
+	//---------------------Animation of arms and legs -------------------------
+	if (keyBoard.pressed("W") || keyBoard.pressed("S")) {
+			moveRobot();
+ }
+ //--------------------render-------------------------------------------------
 	window.requestAnimationFrame(animate);
 	render();
 }
 
-
+function render() {
+	var delta = clock.getDelta();
+	cameraControls.update(delta);
+	renderer.render(scene, camera);
+}
 
 try {
   init();
