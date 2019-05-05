@@ -388,7 +388,49 @@ function recalculateBarycentricCoords(){
 	// calling them with the arguments in the correct order.
 
   // YOUR CODE HERE:
-	
+
+
+  //Book link:
+  //http://canvas.projekti.info/ebooks/3D%20Math%20Primer%20for%20Graphics%20and%20Game%20Development%20(2nd%20Ed)(gnv64).pdf
+  
+  // Create vectors to center
+  var centerVec1 = new THREE.Vector3().subVectors(p.position, v1.position);
+  var centerVec2 = new THREE.Vector3().subVectors(p.position, v2.position);
+  var centerVec3 = new THREE.Vector3().subVectors(p.position, v3.position);
+
+  // Create middle vectors
+  var middleVec1 = new THREE.Vector3().subVectors(v3.position, v2.position);
+  var middleVec2 = new THREE.Vector3().subVectors(v1.position, v3.position);
+  var middleVec3 = new THREE.Vector3().subVectors(v2.position, v1.position);
+  
+//------------------------ n = (e1 X e2)/ ||e1 X e2||
+  tri.geometry.computeFaceNormals();
+  var n = new THREE.Vector3();
+  n = tri.geometry.faces[0].normal.clone().normalize();
+//----------------------------
+
+
+// Formulas from page 329 of book 9.6 Triangles
+  var AT = middleVec1.clone().cross(middleVec2).dot(n) / 2;
+  var AT1 = middleVec1.clone().cross(centerVec3).dot(n) / 2;
+  var AT2 = middleVec2.clone().cross(centerVec1).dot(n) / 2;
+  var AT3 = middleVec3.clone().cross(centerVec2).dot(n) / 2;
+//Each barycentric coordinate biis given by A(Ti)/A(T):
+
+  b1 = AT1 / AT;
+  b2 = AT2 / AT;
+  b3 = AT3 / AT;
+  
+// Validation 
+
+  if (AT1 < 0 || AT2 < 0 || AT3 < 0) {
+    inTriangle = false;
+  } else {
+    inTriangle = true;
+  }
+
+  
+
 };
 
 try {
